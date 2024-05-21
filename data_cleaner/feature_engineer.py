@@ -1,25 +1,16 @@
 import pandas as pd
+import numpy as np
+
 
 class FeatureEngineer:
-    @staticmethod
-    def create_feature(df, new_column, func, *args):
-        df[new_column] = df.apply(lambda row: func(row, *args), axis=1)
-        return df
+    def __init__(self, df):
+        self.df = df
 
-    @staticmethod
-    def binning(df, column, bins, labels):
-        df[column + '_binned'] = pd.cut(df[column], bins=bins, labels=labels)
-        return df
+    def add_polynomial_features(self, column, degree=2):
+        for d in range(2, degree + 1):
+            self.df[f'{column}_poly_{d}'] = self.df[column] ** d
+        return self.df
 
-    @staticmethod
-    def polynomial_features(df, column, degree):
-        for i in range(2, degree + 1):
-            df[column + f'_{i}'] = df[column] ** i
-        return df
-
-    @staticmethod
-    def interaction_features(df, columns):
-        from itertools import combinations
-        for col1, col2 in combinations(columns, 2):
-            df[col1 + '_x_' + col2] = df[col1] * df[col2]
-        return df
+    def add_interaction_features(self, column1, column2):
+        self.df[f'{column1}_x_{column2}'] = self.df[column1] * self.df[column2]
+        return self.df

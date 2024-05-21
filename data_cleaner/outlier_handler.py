@@ -3,36 +3,31 @@ import numpy as np
 
 
 class OutlierHandler:
-    @staticmethod
-    def iqr_outlier_detection(df, column, threshold=1.5):
-        Q1 = df[column].quantile(0.25)
-        Q3 = df[column].quantile(0.75)
+
+    def __init__(self, df):
+        self.df = df
+
+    def identify_outliers(self, column, threshold=1.5):
+        Q1 = self.df[column].quantile(0.25)
+        Q3 = self.df[column].quantile(0.75)
         IQR = Q3 - Q1
-        lower_bound = Q1 - (IQR * threshold)
-        upper_bound = Q3 + (IQR * threshold)
-        return df[(df[column] >= lower_bound) & (df[column] <= upper_bound)]
+        lower_bound = Q1 - threshold * IQR
+        upper_bound = Q3 + threshold * IQR
+        return (self.df[column] < lower_bound) | (self.df[column] > upper_bound)
 
-    @staticmethod
-    def z_score_outlier_detection(df, column, threshold=3):
-        mean = df[column].mean()
-        std = df[column].std()
-        df['z_score'] = (df[column] - mean) / std
-        return df[abs(df['z_score']) <= threshold].drop(columns=['z_score'])
+    def remove_outliers(self, columns=None, threshold=1.5):
+        if columns is None:
+            columns = self.df.columns
+        mask = pd.Series(False, index=self.df.index)
+        for column in columns:
+            mask |= self.identify_outliers(column, threshold)
+        return self.df[~mask]
 
-    @staticmethod
-    def replace_outliers(df, column, method='mean'):
-        if method == 'mean':
-            replacement_value = df[column].mean()
-        elif method == 'median':
-            replacement_value = df[column].median()
-        else:
-            raise ValueError("Invalid method. Choose 'mean' or 'median'.")
-
-        Q1 = df[column].quantile(0.25)
-        Q3 = df[column].quantile(0.75)
-        IQR = Q3 - Q1
-        lower_bound = Q1 - 1.5 * IQR
-        upper_bound = Q3 + 1.5 * IQR
-               
-        df[column] = np.where((df[column] < lower_bound) | (df[column] > upper_bound), replacement_value, df[column])
-        return df
+    def replace_outliers_with_iqr(self, columns=None, threshold=1.5):
+        if columns is None:
+            columns = self.df.columns
+        for column in columns:
+            outliers = self.identify_outliers(column, threshold)
+            median = self.df[column].median()
+            self.df.loc[outliers, column] = median
+        return self.df

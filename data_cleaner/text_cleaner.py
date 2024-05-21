@@ -1,46 +1,45 @@
-import pandas as pd
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer, PorterStemmer
-import string
 import re
-
-nltk.download('stopwords')
-nltk.download('wordnet')
+import string
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer, WordNetLemmatizer
 
 
 class TextCleaner:
-    def __init__(self):
-        self.stop_words = set(stopwords.words('english'))
-        self.lemmatizer = WordNetLemmatizer()
-        self.stemmer = PorterStemmer()
 
-    def remove_stopwords(self, text):
-        return ' '.join([word for word in text.split() if word.lower() not in self.stop_words])
+    def __init__(self, text):
+        self.text = text
 
-    def lowercase(self, text):
-        return text.lower()
+    def lowercase(self):
+        self.text = self.text.lower()
+        return self.text
 
-    def remove_punctuation(self, text):
-        return text.translate(str.maketrans('', '', string.punctuation))
+    def remove_punctuation(self):
+        self.text = self.text.translate(str.maketrans('', '', string.punctuation))
+        return self.text
 
-    def lemmatize(self, text):
-        return ' '.join([self.lemmatizer.lemmatize(word) for word in text.split()])
+    def remove_numbers(self):
+        self.text = re.sub(r'\d+', '', self.text)
+        return self.text
 
-    def stem(self, text):
-        return ' '.join([self.stemmer.stem(word) for word in text.split()])
+    def remove_stopwords(self, language='english'):
+        stop_words = set(stopwords.words(language))
+        self.text = ' '.join([word for word in self.text.split() if word not in stop_words])
+        return self.text
 
-    def clean_text(self, text, remove_stopwords=True, lemmatize=True, stem=False, remove_punct=True):
-        if remove_stopwords:
-            text = self.remove_stopwords(text)
-        if lemmatize:
-            text = self.lemmatize(text)
-        if stem:
-            text = self.stem(text)
-        if remove_punct:
-            text = self.remove_punctuation(text)
-        return text
+    def stem_text(self):
+        stemmer = PorterStemmer()
+        self.text = ' '.join([stemmer.stem(word) for word in self.text.split()])
+        return self.text
 
-    @staticmethod
-    def remove_urls(text):
-        return re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
+    def lemmatize_text(self):
+        lemmatizer = WordNetLemmatizer()
+        self.text = ' '.join([lemmatizer.lemmatize(word) for word in self.text.split()])
+        return self.text
+
+    def remove_whitespace(self):
+        self.text = ' '.join(self.text.split())
+        return self.text
+
+    def remove_special_characters(self):
+        self.text = re.sub(r'[^a-zA-Z\s]', '', self.text)
+        return self.text

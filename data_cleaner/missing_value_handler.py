@@ -1,23 +1,35 @@
 import pandas as pd
-from sklearn.impute import SimpleImputer
+import numpy as np
 
 
 class MissingValueHandler:
-    def impute(df, column, strategy='mean', fill_value=None):
-        if strategy in ['mean', 'median', 'most_frequent']:
-            imputer = SimpleImputer(strategy=strategy)
-        elif strategy == 'constant' and fill_value is not None:
-            imputer = SimpleImputer(strategy='constant', fill_value=fill_value)
-        else:
-            raise ValueError(
-                "Invalid strategy. Choose 'mean', 'median', 'most_frequent', or 'constant' with a fill_value.")
-        df[column] = imputer.fit_transform(df[[column]])
-        return df
 
-    @staticmethod
-    def delete_rows(df, columns, how='any'):
-        return df.dropna(subset=columns, how=how)
+    def __init__(self, df):
+        self.df = df
 
-    @staticmethod
-    def delete_columns(df, threshold=0.5):
-        return df.dropna(axis=1, thresh=int(threshold * len(df)))
+    def identify_missing(self):
+        return self.df.isnull()
+
+    def impute_mean(self, columns=None):
+        if columns is None:
+            columns = self.df.columns
+        for column in columns:
+            self.df[column].fillna(self.df[column].mean(), inplace=True)
+        return self.df
+
+    def impute_median(self, columns=None):
+        if columns is None:
+            columns = self.df.columns
+        for column in columns:
+            self.df[column].fillna(self.df[column].median(), inplace=True)
+        return self.df
+
+    def impute_constant(self, value, columns=None):
+        if columns is None:
+            columns = self.df.columns
+        self.df.fillna(value, inplace=True)
+        return self.df
+
+    def drop_missing(self, axis=0, how='any'):
+        self.df.dropna(axis=axis, how=how, inplace=True)
+        return self.df

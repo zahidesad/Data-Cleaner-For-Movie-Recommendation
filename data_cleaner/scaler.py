@@ -1,22 +1,26 @@
-from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 import pandas as pd
+import numpy as np
 
 
 class Scaler:
-    @staticmethod
-    def min_max_scaling(df, columns):
-        scaler = MinMaxScaler()
-        df[columns] = scaler.fit_transform(df[columns])
-        return df
 
-    @staticmethod
-    def standard_scaling(df, columns):
-        scaler = StandardScaler()
-        df[columns] = scaler.fit_transform(df[columns])
-        return df
+    def __init__(self, df):
+        self.df = df
 
-    @staticmethod
-    def robust_scaling(df, columns):
-        scaler = RobustScaler()
-        df[columns] = scaler.fit_transform(df[columns])
-        return df
+    def min_max_scale(self, columns=None):
+        if columns is None:
+            columns = self.df.columns
+        for column in columns:
+            min_value = self.df[column].min()
+            max_value = self.df[column].max()
+            self.df[column] = (self.df[column] - min_value) / (max_value - min_value)
+        return self.df
+
+    def standard_scale(self, columns=None):
+        if columns is None:
+            columns = self.df.columns
+        for column in columns:
+            mean = self.df[column].mean()
+            std = self.df[column].std()
+            self.df[column] = (self.df[column] - mean) / std
+        return self.df

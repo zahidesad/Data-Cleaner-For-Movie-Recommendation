@@ -1,23 +1,33 @@
-import pandas as pd
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 
+
 class CategoricalEncoder:
-    @staticmethod
-    def one_hot_encode(df, column, drop_first=True):
-        encoder = OneHotEncoder(drop=drop_first, sparse=False)
-        encoded = encoder.fit_transform(df[[column]])
-        encoded_df = pd.DataFrame(encoded, columns=encoder.get_feature_names_out([column]))
-        df = df.join(encoded_df)
-        return df.drop(column, axis=1)
+    def __init__(self):
+        self.one_hot_encoder = None
+        self.label_encoder = None
 
-    @staticmethod
-    def label_encode(df, column):
-        encoder = LabelEncoder()
-        df[column] = encoder.fit_transform(df[column])
-        return df
+    def fit_one_hot(self, data):
+        self.one_hot_encoder = OneHotEncoder(sparse_output=False)
+        self.one_hot_encoder.fit(data)
 
-    @staticmethod
-    def target_encode(df, column, target):
-        mean_target = df.groupby(column)[target].mean()
-        df[column + '_encoded'] = df[column].map(mean_target)
-        return df
+    def transform_one_hot(self, data):
+        if self.one_hot_encoder is None:
+            raise ValueError("OneHotEncoder is not fitted yet. Call fit_one_hot first.")
+        return self.one_hot_encoder.transform(data)
+
+    def fit_transform_one_hot(self, data):
+        self.fit_one_hot(data)
+        return self.transform_one_hot(data)
+
+    def fit_label(self, data):
+        self.label_encoder = LabelEncoder()
+        self.label_encoder.fit(data)
+
+    def transform_label(self, data):
+        if self.label_encoder is None:
+            raise ValueError("LabelEncoder is not fitted yet. Call fit_label first.")
+        return self.label_encoder.transform(data)
+
+    def fit_transform_label(self, data):
+        self.fit_label(data)
+        return self.transform_label(data)

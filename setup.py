@@ -13,8 +13,9 @@ setup(
     install_requires=[
         'pandas',
         'numpy'
-        'scikit-learn',
+        'numpy',
         'nltk',
+        'beautifulsoup4',
     ],
     classifiers=[
         'Programming Language :: Python :: 3',

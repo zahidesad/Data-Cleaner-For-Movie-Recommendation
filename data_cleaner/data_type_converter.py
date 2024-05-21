@@ -1,17 +1,22 @@
 import pandas as pd
 
+
 class DataTypeConverter:
-    @staticmethod
-    def to_numeric(df, column, errors='coerce'):
-        df[column] = pd.to_numeric(df[column], errors=errors)
-        return df
+    def __init__(self):
+        pass
 
-    @staticmethod
-    def to_categorical(df, column):
-        df[column] = df[column].astype('category')
-        return df
+    def convert_to_numeric(self, data, columns, errors='raise'):
+        """
+        Convert specified columns to numeric types.
+        """
+        for column in columns:
+            data[column] = pd.to_numeric(data[column], errors=errors)
+        return data
 
-    @staticmethod
-    def to_datetime(df, column, format=None):
-        df[column] = pd.to_datetime(df[column], format=format, errors='coerce')
-        return df
+    def convert_to_categorical(self, data, columns):
+        """
+        Convert specified columns to categorical types.
+        """
+        for column in columns:
+            data[column] = data[column].astype('category')
+        return data
